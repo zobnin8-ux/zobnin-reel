@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Zobnin Studio — Portfolio</title>
+<meta name="description" content="AI films, ads, music videos and vertical drama. Swipe through the work.">
+<meta property="og:title" content="Zobnin Studio — swipe through the work">
+<meta property="og:description" content="Films, ads, music videos, vertical drama. Tap for sound.">
+<meta property="og:image" content="/media/og.jpg">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#000000">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--acc:#e8c27a;--txt:#f4f1ea;--dim:rgba(244,241,234,.66)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;overflow:hidden;overscroll-behavior:none}
+#feed{position:fixed;inset:0;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain}
+#feed::-webkit-scrollbar{display:none}
+.s{position:relative;height:100vh;height:100dvh;width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#000 center/cover no-repeat}
+.s video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent}
+@media (min-aspect-ratio:3/4){.s video{object-fit:contain}.s{background-size:contain}}
+.shade{position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.55) 45%,transparent 100%);pointer-events:none}
+.info{position:absolute;left:18px;right:18px;bottom:calc(30px + env(safe-area-inset-bottom));pointer-events:none;max-width:560px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#000;background:var(--acc);padding:4px 9px;border-radius:3px;font-weight:700}
+.info h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(26px,7.4vw,40px);line-height:1.05;margin:10px 0 8px;text-shadow:0 2px 16px rgba(0,0,0,.6)}
+.info p{font-size:15px;line-height:1.4;color:var(--dim);max-width:44ch}
+.price{margin-top:10px;font-size:14px;font-weight:600;color:var(--acc)}
+.bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.15)}
+.bar i{display:block;height:100%;width:0;background:var(--acc)}
+#top{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent);pointer-events:none}
+#top .brand{font-size:12px;letter-spacing:.32em;font-weight:700;flex:1}
+#top button{pointer-events:auto}
+.chip{border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--txt);font-family:inherit;font-size:12px;font-weight:600;line-height:1;padding:8px 11px;border-radius:999px;cursor:pointer}
+.chip.cta{background:var(--acc);color:#000;border-color:var(--acc)}
+#count{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+#count i{width:4px;height:14px;border-radius:2px;background:rgba(255,255,255,.25);transition:.25s}
+#count i.on{background:var(--acc);height:26px}
+#tap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;background:rgba(0,0,0,.08);cursor:pointer}
+#tap span{font-family:inherit;font-size:15px;font-weight:700;line-height:1;letter-spacing:.08em;padding:16px 26px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.07);box-shadow:0 0 0 10px rgba(232,194,122,.18)}}
+.hint{position:absolute;left:50%;bottom:calc(8px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);animation:up 1.8s ease-in-out infinite;pointer-events:none;z-index:2}
+@keyframes up{50%{transform:translate(-50%,-6px)}}
+.paused::after{content:"";position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px;border-radius:50%;background:rgba(0,0,0,.45) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M8 5v14l11-7z'/%3E%3C/svg%3E") center/30px no-repeat;pointer-events:none}
+.last{display:flex;flex-direction:column;justify-content:center;padding:calc(70px + env(safe-area-inset-top)) 22px calc(30px + env(safe-area-inset-bottom));background:radial-gradient(120% 80% at 50% 0%,#2a2116 0%,#000 70%)}
+.last h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(30px,8.5vw,46px);line-height:1.05;margin-bottom:8px}
+.last .sub{color:var(--dim);font-size:15px;margin-bottom:20px;max-width:40ch}
+.list{list-style:none;border-top:1px solid rgba(255,255,255,.14);max-width:560px}
+.list li{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.14);font-size:15px}
+.list b{color:var(--acc);font-weight:600;white-space:nowrap}
+.btns{display:flex;flex-direction:column;gap:10px;margin-top:22px;max-width:560px}
+.btn{display:block;text-align:center;padding:16px;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;line-height:1;text-decoration:none;color:#000;background:var(--acc);border:0;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--txt);border:1px solid rgba(255,255,255,.35)}
+.info p,.price,.info h2,.shade{transition:all .5s ease}
+.compact .info p,.compact .price{opacity:0;max-height:0;margin:0;overflow:hidden}
+.compact .info h2{font-size:20px;margin:6px 0 0}
+.compact .shade{height:20%}
+.info p,.price{max-height:200px}
+.note{margin-top:14px;font-size:12px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="brand">ZOBNIN STUDIO</div>
+  <button class="chip" id="lang">RU</button>
+  <button class="chip" id="snd" aria-label="sound">🔇</button>
+  <button class="chip cta" id="hire" data-t="hire">Order a video</button>
+</div>
+<div id="count"></div>
+<main id="feed"></main>
+
+<script>
+const TG_USER='A_nubi_ss';
+const SITE='https://studio.zobnin.tech';
+const W=[
+ {id:'showreel',tag:['Showreel','Шоурил'],t:['Zobnin Studio','Zobnin Studio'],
+  d:['Films, ads, music videos and characters. Swipe up — each one is a separate project.','Фильмы, реклама, клипы и персонажи. Листай вверх — дальше каждая работа отдельно.']},
+ {id:'strings',tag:['Short film','Короткий фильм'],t:['Who Pulls the Strings?','Кто дёргает за нити?'],
+  d:['A giant marionette over an old city. One planned camera move per shot: flyovers, push-ins, a climb into the clouds.','Гигантская марионетка над старым городом. Каждый кадр — своё движение камеры: облёт, наезд, подъём за облака.'],p:['Short film — from $800','Короткий фильм — от $800']},
+ {id:'liquid',tag:['Visual effects','Визуальные эффекты'],t:['Black Liquid','Чёрная жидкость'],
+  d:['Crown, hand, wings, wolf, rose — every form melts into the next, cut on the beat.','Корона, рука, крылья, волк, роза — каждая форма перетекает в следующую точно в бит.']},
+ {id:'husband',tag:['Vertical drama','Вертикальная драма'],t:["My Fake Husband Isn't From Earth · EP01",'Мой фиктивный муж не с Земли · 1 серия'],
+  d:['A series with dialogue, lip sync and the same actors in every scene, episode after episode.','Сериал: диалоги, липсинк, одни и те же актёры во всех сценах из серии в серию.'],p:['Series — on request','Сериал — по запросу']},
+ {id:'roast',tag:['Ad · 15 sec','Реклама · 15 сек'],t:['Harbor Roast','Harbor Roast'],
+  d:['A coffee shop ad you could never film with a camera.','Реклама кофейни, которую невозможно снять камерой.'],p:['15-sec ad — from $300','Ролик 15 сек — от $300']},
+ {id:'bakery',tag:['Ad · 15 sec','Реклама · 15 сек'],t:['Lantern Street Bakery','Lantern Street Bakery'],
+  d:['A bakery ad built to stop the scroll in the first second.','Реклама пекарни — останавливает ленту с первой секунды.']},
+ {id:'guest',tag:['Music video','Клип'],t:['Night Guest','Ночная гостья'],
+  d:['My poem, my song, my film. One heroine through the whole video, every cut on the music.','Мои стихи, моя песня, мой фильм. Одна героиня от начала до конца, каждая склейка — в музыку.'],p:['Artist music video — from $1,500','Клип для артиста — от $1 500']},
+ {id:'patches',tag:['Short film','Короткий фильм'],t:['Patches','Заплатки'],
+  d:['A man with a torn patchwork heart on a street that cannot exist. A strange, sad love story.','Парень с разорванным лоскутным сердцем на улице, которой не может быть. Странная и грустная история любви.']},
+ {id:'hall',tag:['Story with a narrator','История с рассказчиком'],t:['Hall of Earth','Зал Земли'],
+  d:['An alien museum hall dedicated to us. The guide stays identical in all 11 shots; voice-over and original score.','Инопланетный музей, зал про нас. Гид одинаковый во всех 11 кадрах, закадровый голос и своя музыка.']},
+ {id:'faces',tag:['Reels / TikTok','Reels / TikTok'],t:['Three Faces','Три лица'],
+  d:['One portrait of a many-faced queen. The faces wake up one by one.','Один портрет многоликой королевы. Лица просыпаются по очереди.']},
+ {id:'tea',tag:['Music film','Музыкальный фильм'],t:['Tea Oracle','Чайный оракул'],
+  d:['One still image turned into a minute of film: 12 shots on the beat, original music, a seamless loop.','Из одной картинки — минута кино: 12 кадров в бит, своя музыка, бесшовная петля.'],p:['1-min music film — from $800','Музыкальный фильм 1 мин — от $800']},
+ {id:'lantern',tag:['Music film','Музыкальный фильм'],t:['Lantern Coming Home','Возвращение огонька'],
+  d:['A city living inside a giant jellyfish wakes up and rises out of the fjord.','Город внутри гигантской медузы просыпается и поднимается из фьорда.']},
+ {id:'reef',tag:['Music film','Музыкальный фильм'],t:['Reef Dream','Сон рифа'],
+  d:['A porcelain diver in a coral-grown helmet. One continuous, fluid minute.','Фарфоровая водолазка в шлеме, обросшем кораллами. Одна непрерывная плавная минута.']}
+];
+const T={
+ hire:['Order a video','Заказать видео'],
+ tap:['TAP FOR SOUND','НАЖМИ — ЗВУК'],
+ swipe:['swipe up','листай вверх'],
+ lastT:['Let’s make yours','Сделаем ваше'],
+ lastS:['From idea and script to music and final edit — one person, one style, no agencies in between.','От идеи и сценария до музыки и монтажа — один автор, один стиль, без посредников.'],
+ svc:[[['15-sec ad','from $300'],['30-sec ad','from $500'],['1-min music film','from $800'],['Artist music video','from $1,500'],['Original soundtrack','from $90'],['Vertical drama series','on request']],
+      [['Рекламный ролик 15 сек','от $300'],['Рекламный ролик 30 сек','от $500'],['Музыкальный фильм 1 мин','от $800'],['Клип для артиста','от $1 500'],['Своя музыка (трек)','от $90'],['Вертикальный сериал','по запросу']]],
+ inc:['Music is included in every video package.','Музыка входит в любой видеопакет.'],
+ dm:['Write me in Telegram','Написать в Telegram'],
+ site:['Studio website','Сайт студии'],
+ again:['Watch again','Смотреть сначала']
+};
+const tg=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData!==undefined?Telegram.WebApp:null;
+let L=0;
+try{const q=new URLSearchParams(location.search).get('lang');const lc=(q||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.language_code)||navigator.language||'en').toLowerCase();L=/^(ru|uk|be|kk)/.test(lc)?1:0}catch(e){}
+
+const feed=document.getElementById('feed'),count=document.getElementById('count');
+let soundOn=false;
+
+function build(){
+  feed.innerHTML='';count.innerHTML='';
+  W.forEach((w,i)=>{
+    const s=document.createElement('section');s.className='s';s.style.backgroundImage=`url(media/${w.id}.jpg)`;s.dataset.i=i;
+    s.innerHTML=`<video playsinline webkit-playsinline muted preload="${i<2?'auto':'none'}" poster="media/${w.id}.jpg" ${i?'':'loop'}><source src="media/${w.id}.mp4" type="video/mp4"></video>
+      <div class="shade"></div>
+      ${i===0?'':`<div class="info"><span class="tag">${w.tag[L]}</span><h2>${w.t[L]}</h2><p>${w.d[L]}</p>${w.p?`<div class="price">${w.p[L]}</div>`:''}</div>`}
+      <div class="bar"><i></i></div>${i===0?`<div class="hint">↑ ${T.swipe[L]}</div>`:''}`;
+    feed.appendChild(s);
+    count.appendChild(document.createElement('i'));
+  });
+  const last=document.createElement('section');last.className='s last';last.dataset.i=W.length;
+  last.innerHTML=`<h2>${T.lastT[L]}</h2><div class="sub">${T.lastS[L]}</div>
+   <ul class="list">${T.svc[L].map(r=>`<li><span>${r[0]}</span><b>${r[1]}</b></li>`).join('')}</ul>
+   <div class="btns"><button class="btn" data-dm>${T.dm[L]}</button><a class="btn ghost" href="${SITE}" target="_blank" rel="noopener" data-site>${T.site[L]}</a><button class="btn ghost" data-again>${T.again[L]}</button></div>
+   <div class="note">${T.inc[L]}</div>`;
+  feed.appendChild(last);count.appendChild(document.createElement('i'));
+  if(!soundOn){const tap=document.createElement('div');tap.id='tap';tap.innerHTML=`<span>🔊 ${T.tap[L]}</span>`;feed.firstChild.appendChild(tap);tap.onclick=e=>{e.stopPropagation();enableSound()}}
+  document.getElementById('hire').textContent=T.hire[L];
+  document.getElementById('lang').textContent=L?'EN':'RU';
+  wire();
+}
+
+function vids(){return [...feed.querySelectorAll('video')]}
+function enableSound(){
+  soundOn=true;const t=document.getElementById('tap');t&&t.remove();
+  updSnd();const v=cur&&cur.querySelector('video');if(v){v.muted=false;v.play().catch(()=>{v.muted=true;v.play()})}
+}
+function updSnd(){document.getElementById('snd').textContent=soundOn?'🔊':'🔇';vids().forEach(v=>{if(v!==(cur&&cur.querySelector('video')))v.muted=true})}
+
+let cur=null,io=null,ct=0;
+function activate(s){
+  if(cur===s)return;
+  if(cur){const pv=cur.querySelector('video');if(pv){pv.pause();pv.muted=true}cur.classList.remove('paused')}
+  cur=s;const i=+s.dataset.i;
+  [...count.children].forEach((c,k)=>c.classList.toggle('on',k===i));
+  const v=s.querySelector('video');
+  // preload neighbours
+  const secs=[...feed.children];[i+1,i+2].forEach(k=>{const n=secs[k]&&secs[k].querySelector('video');if(n&&n.preload==='none'){n.preload='auto';n.load()}});
+  if(!v)return;
+  if(i>0)v.currentTime=0;
+  s.classList.remove('compact');clearTimeout(ct);ct=setTimeout(()=>{if(cur===s&&!v.paused)s.classList.add('compact')},3500);
+  v.muted=!soundOn;
+  v.play().catch(()=>{v.muted=true;v.play().catch(()=>s.classList.add('paused'))});
+  if(tg&&tg.HapticFeedback)try{tg.HapticFeedback.selectionChanged()}catch(e){}
+}
+function wire(){
+  io&&io.disconnect();cur=null;
+  io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>.6)activate(e.target)}),{root:feed,threshold:[.6]});
+  [...feed.children].forEach(s=>io.observe(s));
+  vids().forEach(v=>{
+    const s=v.closest('.s'),bar=s.querySelector('.bar i');
+    v.addEventListener('timeupdate',()=>{if(v.duration)bar.style.width=(v.currentTime/v.duration*100)+'%'});
+    v.addEventListener('ended',()=>{const n=s.nextElementSibling;if(n)n.scrollIntoView({behavior:'smooth'})});
+    s.addEventListener('click',()=>{if(!soundOn){enableSound();return}if(v.paused){v.play();s.classList.remove('paused');clearTimeout(ct);ct=setTimeout(()=>{if(!v.paused)s.classList.add('compact')},2500)}else{v.pause();s.classList.add('paused');s.classList.remove('compact')}});
+  });
+  feed.querySelector('[data-dm]').onclick=dm;
+  feed.querySelector('[data-again]').onclick=()=>feed.firstChild.scrollIntoView({behavior:'smooth'});
+  feed.querySelector('[data-site]').onclick=e=>{if(tg){e.preventDefault();tg.openLink(SITE)}};
+}
+function dm(){const u='https://t.me/'+TG_USER;if(tg&&tg.openTelegramLink)tg.openTelegramLink(u);else window.open(u,'_blank')}
+
+document.getElementById('hire').onclick=dm;
+document.getElementById('snd').onclick=()=>{soundOn=!soundOn;const t=document.getElementById('tap');t&&t.remove();updSnd();const v=cur&&cur.querySelector('video');if(v){v.muted=!soundOn;v.play().catch(()=>{})}};
+document.getElementById('lang').onclick=()=>{const i=cur?+cur.dataset.i:0;L=1-L;build();const t=feed.children[i];t&&t.scrollIntoView();};
+
+if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();tg.setHeaderColor&&tg.setHeaderColor('#000000');tg.setBackgroundColor&&tg.setBackgroundColor('#000000')}catch(e){}}
+build();
+document.addEventListener('visibilitychange',()=>{const v=cur&&cur.querySelector('video');if(!v)return;document.hidden?v.pause():v.play().catch(()=>{})});
+</script>
+</body>
+</html>
