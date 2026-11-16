@@ -119,7 +119,7 @@ const T={
 };
 const tg=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData!==undefined?Telegram.WebApp:null;
 let L=0;
-try{const q=new URLSearchParams(location.search).get('lang');const lc=(q||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.language_code)||navigator.language||'en').toLowerCase();L=/^(ru|uk|be|kk)/.test(lc)?1:0}catch(e){}
+try{const q=new URLSearchParams(location.search).get('lang');L=(q&&/^ru/i.test(q))?1:0}catch(e){}
 
 const feed=document.getElementById('feed'),count=document.getElementById('count');
 let soundOn=false;
